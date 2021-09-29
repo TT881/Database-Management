@@ -1,0 +1,80 @@
+SQL> 
+SQL> /* ======================
+SQL> Name - Hay Munn Hnin Wai
+SQL> UOW ID - 6573277
+SQL> Assignment 2 - Task 3
+SQL> ==========================*/
+SQL> 
+SQL> Create or Replace Function LongTrip(DLNum In Driver.L#%TYPE)
+  2  return varchar2 IS
+  3  
+  4  	result varchar2(500);
+  5          ename varchar2(500);
+  6          MaxLeg number(2);
+  7  
+  8  BEGIN
+  9        -- Get The Max(Count(TripLegs))Performed by the driver Base on  userinput
+ 10         SELECT e.name INTO ename
+ 11         FROM TRKEMPLOYEE e
+ 12         left join driver on e.e# = driver.e#
+ 13         where driver.l# = DLNum;
+ 14  
+ 15         SELECT max(count(tl.leg#)) INTO MaxLeg
+ 16         from trip t, tripleg tl
+ 17         where t.t# = tl.t# and t.l# = DLNum
+ 18         group by tl.t#;
+ 19  
+ 20       IF ( MaxLeg > 0) THEN
+ 21          result := 'Driver Name :'  || ename  || ' & '  ||  chr(10)  ||
+ 22               'The Longest Trip made by this Driver with L# '  || DLNum   || ' is: ' || MaxLeg;
+ 23      ELSE
+ 24          result := 'Driver Name is:'  || ename  || '&'  || chr(10) ||
+ 25               'The Longest Trip made by this Driver with L# ' ||  DLNum || ' is: 0';
+ 26      END IF;
+ 27  
+ 28  return result;
+ 29  END LongTrip;
+ 30  /
+
+Function created.
+
+SQL> show error
+No errors.
+SQL> 
+SQL> --Test the LongestTrip for Driver
+SQL> select LongTrip(driver.L#) from driver;
+
+LONGTRIP(DRIVER.L#)                                                             
+--------------------------------------------------------------------------------
+Driver Name :John Smith &                                                       
+The Longest Trip made by this Driver with L# 10001 is: 5                        
+                                                                                
+Driver Name :John Doe &                                                         
+The Longest Trip made by this Driver with L# 10002 is: 5                        
+                                                                                
+Driver Name :Adam Taylor &                                                      
+The Longest Trip made by this Driver with L# 10003 is: 8                        
+                                                                                
+Driver Name is:Andrew K. Smith&                                                 
+The Longest Trip made by this Driver with L# 10008 is: 0                        
+
+LONGTRIP(DRIVER.L#)                                                             
+--------------------------------------------------------------------------------
+                                                                                
+Driver Name :Frederic Jones &                                                   
+The Longest Trip made by this Driver with L# 20002 is: 5                        
+                                                                                
+Driver Name :Adam Fox &                                                         
+The Longest Trip made by this Driver with L# 20005 is: 4                        
+                                                                                
+Driver Name :John Lucas &                                                       
+The Longest Trip made by this Driver with L# 30005 is: 5                        
+                                                                                
+
+7 rows selected.
+
+SQL> 
+SQL> 
+SQL> set echo off
+SQL> set feedback off
+SQL> spool off

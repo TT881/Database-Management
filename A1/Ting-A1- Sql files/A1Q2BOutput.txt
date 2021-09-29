@@ -1,0 +1,410 @@
+SQL> set feedback on
+SQL> 
+SQL> /*==================================
+SQL> 	     Name - Hay Munn Hnin Wai
+SQL> 	     Student ID - 6573277
+SQL> 	     Tutorial - T02
+SQL> 	     Assignment 1 - Task(2B)
+SQL> =====================================*/
+SQL> 
+SQL> -- (2b-i) explain plan before the creation of the Index
+SQL> explain plan for
+  2  SELECT distinct o_total, o_orderDate
+  3  FROM ORDERS
+  4  ORDER BY O_ORDERDATE;
+SELECT distinct o_total, o_orderDate
+                *
+ERROR at line 2:
+ORA-00904: "O_TOTAL": invalid identifier 
+
+
+SQL> 
+SQL> -- Displan Plan (2b-i)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2932526239                                                                                                         
+                                                                                                                                    
+------------------------------------------------------------------------------------                                                
+| Id  | Operation              | Name      | Rows  | Bytes | Cost (%CPU)| Time     |                                                
+------------------------------------------------------------------------------------                                                
+|   0 | SELECT STATEMENT       |           |  3023 | 15115 |  1326   (4)| 00:00:01 |                                                
+|*  1 |  FILTER                |           |       |       |            |          |                                                
+|   2 |   HASH GROUP BY        |           |  3023 | 15115 |  1326   (4)| 00:00:01 |                                                
+|   3 |    INDEX FAST FULL SCAN| A1Q2B4IDX |  1800K|  8789K|  1281   (1)| 00:00:01 |                                                
+------------------------------------------------------------------------------------                                                
+                                                                                                                                    
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   1 - filter(COUNT(*)>2)                                                                                                           
+
+15 rows selected.
+
+SQL> 
+SQL> --(2b-ii) explain plan before the creation of the Index
+SQL> explain plan for
+  2  SELECT *
+  3  FROM PART
+  4  WHERE P_BRAND = 'GOLDEN BOLTS'
+  5  AND P_SIZE = 25;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2b-ii)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 673417232                                                                                                          
+                                                                                                                                    
+--------------------------------------------------------------------------                                                          
+| Id  | Operation         | Name | Rows  | Bytes | Cost (%CPU)| Time     |                                                          
+--------------------------------------------------------------------------                                                          
+|   0 | SELECT STATEMENT  |      |     1 |   121 |   291   (1)| 00:00:01 |                                                          
+|*  1 |  TABLE ACCESS FULL| PART |     1 |   121 |   291   (1)| 00:00:01 |                                                          
+--------------------------------------------------------------------------                                                          
+                                                                                                                                    
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                                                    
+   1 - filter("P_SIZE"=25 AND "P_BRAND"='GOLDEN BOLTS')                                                                             
+
+13 rows selected.
+
+SQL> 
+SQL> --(2b-iii) explain plan before the creation of the Index
+SQL> explain plan for
+  2  SELECT C_CUSTKEY,C_NAME,C_ADDRESS
+  3  FROM CUSTOMER;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2b-ii)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2844954298                                                                                                         
+                                                                                                                                    
+------------------------------------------------------------------------------                                                      
+| Id  | Operation         | Name     | Rows  | Bytes | Cost (%CPU)| Time     |                                                      
+------------------------------------------------------------------------------                                                      
+|   0 | SELECT STATEMENT  |          | 45000 |  2241K|   282   (0)| 00:00:01 |                                                      
+|   1 |  TABLE ACCESS FULL| CUSTOMER | 45000 |  2241K|   282   (0)| 00:00:01 |                                                      
+------------------------------------------------------------------------------                                                      
+
+8 rows selected.
+
+SQL> 
+SQL> 
+SQL> --(2b-iv) explain plan before the creation of the Index
+SQL> explain plan for
+  2  SELECT L_PARTKEY,count(*)
+  3  FROM LINEITEM
+  4  GROUP BY L_PARTKEY
+  5  HAVING COUNT(L_TAX) >2;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2b-iv)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2487493660                                                                                                         
+                                                                                                                                    
+--------------------------------------------------------------------------------                                                    
+| Id  | Operation           | Name     | Rows  | Bytes | Cost (%CPU)| Time     |                                                    
+--------------------------------------------------------------------------------                                                    
+|   0 | SELECT STATEMENT    |          |  3023 | 15115 |  8821   (1)| 00:00:01 |                                                    
+|*  1 |  FILTER             |          |       |       |            |          |                                                    
+|   2 |   HASH GROUP BY     |          |  3023 | 15115 |  8821   (1)| 00:00:01 |                                                    
+|   3 |    TABLE ACCESS FULL| LINEITEM |  1800K|  8789K|  8775   (1)| 00:00:01 |                                                    
+--------------------------------------------------------------------------------                                                    
+                                                                                                                                    
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   1 - filter(COUNT(*)>2)                                                                                                           
+
+15 rows selected.
+
+SQL> 
+SQL> --(2b-v) explain plan before the creation of the Index
+SQL> explain plan for
+  2  SELECT *
+  3  FROM LINEITEM
+  4  WHERE L_QUANTITY = 100
+  5  OR L_SHIPMODE = 'FAST';
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2b-v)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 98068815                                                                                                           
+                                                                                                                                    
+------------------------------------------------------------------------------                                                      
+| Id  | Operation         | Name     | Rows  | Bytes | Cost (%CPU)| Time     |                                                      
+------------------------------------------------------------------------------                                                      
+|   0 | SELECT STATEMENT  |          |   257K|    30M|  8802   (1)| 00:00:01 |                                                      
+|*  1 |  TABLE ACCESS FULL| LINEITEM |   257K|    30M|  8802   (1)| 00:00:01 |                                                      
+------------------------------------------------------------------------------                                                      
+                                                                                                                                    
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                                                    
+   1 - filter("L_SHIPMODE"='FAST' OR "L_QUANTITY"=100)                                                                              
+
+13 rows selected.
+
+SQL> 
+SQL> /*========================================================
+SQL> -- Create the Index-1
+SQL> ===========================================================*/
+SQL> create index A1Q2b1Idx on ORDERS(o_totalprice, o_orderDate);
+
+Index created.
+
+SQL> 
+SQL> -- (2b-i)explain plan after the creation of the Index for Q.2b-i
+SQL> explain plan for
+  2  SELECT distinct o_totalprice, o_orderDate
+  3  FROM ORDERS
+  4  ORDER BY O_ORDERDATE;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2b-i)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2215324369                                                                                                         
+                                                                                                                                    
+-------------------------------------------------------------------------------------------                                         
+| Id  | Operation             | Name      | Rows  | Bytes |TempSpc| Cost (%CPU)| Time     |                                         
+-------------------------------------------------------------------------------------------                                         
+|   0 | SELECT STATEMENT      |           |   449K|  6152K|       |  4874   (1)| 00:00:01 |                                         
+|   1 |  SORT UNIQUE          |           |   449K|  6152K|    10M|  2651   (1)| 00:00:01 |                                         
+|   2 |   INDEX FAST FULL SCAN| A1Q2B1IDX |   450K|  6152K|       |   428   (1)| 00:00:01 |                                         
+-------------------------------------------------------------------------------------------                                         
+
+9 rows selected.
+
+SQL> 
+SQL> /*========================================================
+SQL> -- Create the Index-2
+SQL> ===========================================================*/
+SQL> create index A1Q2b2Idx on PART(P_BRAND,P_SIZE);
+
+Index created.
+
+SQL> 
+SQL> --(2b-ii) explain plan after the creation of the Index
+SQL> explain plan for
+  2  SELECT *
+  3  FROM PART
+  4  WHERE P_BRAND = 'GOLDEN BOLTS'
+  5  AND P_SIZE = 25;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2b-ii)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2863840681                                                                                                         
+                                                                                                                                    
+-------------------------------------------------------------------------------------------------                                   
+| Id  | Operation                           | Name      | Rows  | Bytes | Cost (%CPU)| Time     |                                   
+-------------------------------------------------------------------------------------------------                                   
+|   0 | SELECT STATEMENT                    |           |     1 |   121 |     2   (0)| 00:00:01 |                                   
+|   1 |  TABLE ACCESS BY INDEX ROWID BATCHED| PART      |     1 |   121 |     2   (0)| 00:00:01 |                                   
+|*  2 |   INDEX RANGE SCAN                  | A1Q2B2IDX |     1 |       |     1   (0)| 00:00:01 |                                   
+-------------------------------------------------------------------------------------------------                                   
+                                                                                                                                    
+Predicate Information (identified by operation id):                                                                                 
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   2 - access("P_BRAND"='GOLDEN BOLTS' AND "P_SIZE"=25)                                                                             
+
+14 rows selected.
+
+SQL> 
+SQL> /*========================================================
+SQL> -- Create the Index-3
+SQL> ===========================================================*/
+SQL> create index A1Q2b3Idx on CUSTOMER(c_CUSTKEY,C_NAME , C_ADDRESS);
+
+Index created.
+
+SQL> 
+SQL> 
+SQL> --(2b-iii) explain plan after the creation of the Index
+SQL> explain plan for
+  2  SELECT C_CUSTKEY,C_NAME,C_ADDRESS
+  3  FROM CUSTOMER;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2b-iii)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 1838490812                                                                                                         
+                                                                                                                                    
+----------------------------------------------------------------------------------                                                  
+| Id  | Operation            | Name      | Rows  | Bytes | Cost (%CPU)| Time     |                                                  
+----------------------------------------------------------------------------------                                                  
+|   0 | SELECT STATEMENT     |           | 45000 |  2241K|   105   (0)| 00:00:01 |                                                  
+|   1 |  INDEX FAST FULL SCAN| A1Q2B3IDX | 45000 |  2241K|   105   (0)| 00:00:01 |                                                  
+----------------------------------------------------------------------------------                                                  
+
+8 rows selected.
+
+SQL> 
+SQL> 
+SQL> /*========================================================
+SQL> -- Create the Index-4
+SQL> ===========================================================*/
+SQL> create index A1Q2b4Idx on LINEITEM(L_partkey,L_TAX);
+
+Index created.
+
+SQL> 
+SQL> --(2b-iv) explain plan after the creation of the Index
+SQL> explain plan for
+  2  SELECT L_PARTKEY,count(*)
+  3  FROM LINEITEM
+  4  GROUP BY L_PARTKEY
+  5  HAVING COUNT(L_TAX) >2;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2b-iv)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2932526239                                                                                                         
+                                                                                                                                    
+------------------------------------------------------------------------------------                                                
+| Id  | Operation              | Name      | Rows  | Bytes | Cost (%CPU)| Time     |                                                
+------------------------------------------------------------------------------------                                                
+|   0 | SELECT STATEMENT       |           |  3023 | 15115 |  1326   (4)| 00:00:01 |                                                
+|*  1 |  FILTER                |           |       |       |            |          |                                                
+|   2 |   HASH GROUP BY        |           |  3023 | 15115 |  1326   (4)| 00:00:01 |                                                
+|   3 |    INDEX FAST FULL SCAN| A1Q2B4IDX |  1800K|  8789K|  1281   (1)| 00:00:01 |                                                
+------------------------------------------------------------------------------------                                                
+                                                                                                                                    
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   1 - filter(COUNT(*)>2)                                                                                                           
+
+15 rows selected.
+
+SQL> 
+SQL> /*========================================================
+SQL> -- Create the Index-5
+SQL> ===========================================================*/
+SQL> create index A1Q2b5Idx on LINEITEM (L_QUANTITY,L_SHIPMODE);
+
+Index created.
+
+SQL> 
+SQL> --(2b-v) explain plan after the creation of the Index
+SQL> explain plan for
+  2  SELECT *
+  3  FROM LINEITEM
+  4  WHERE L_QUANTITY = 100
+  5  OR L_SHIPMODE = 'FAST';
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2b-v)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 98068815                                                                                                           
+                                                                                                                                    
+------------------------------------------------------------------------------                                                      
+| Id  | Operation         | Name     | Rows  | Bytes | Cost (%CPU)| Time     |                                                      
+------------------------------------------------------------------------------                                                      
+|   0 | SELECT STATEMENT  |          |   257K|    30M|  8802   (1)| 00:00:01 |                                                      
+|*  1 |  TABLE ACCESS FULL| LINEITEM |   257K|    30M|  8802   (1)| 00:00:01 |                                                      
+------------------------------------------------------------------------------                                                      
+                                                                                                                                    
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                                                    
+   1 - filter("L_SHIPMODE"='FAST' OR "L_QUANTITY"=100)                                                                              
+
+13 rows selected.
+
+SQL> 
+SQL> 
+SQL> --Drop the Index
+SQL> drop index A1Q2b1Idx;
+
+Index dropped.
+
+SQL> drop index A1Q2b2Idx;
+
+Index dropped.
+
+SQL> drop index A1Q2b3Idx;
+
+Index dropped.
+
+SQL> drop index A1Q2b4Idx;
+
+Index dropped.
+
+SQL> drop index A1Q2b5Idx;
+
+Index dropped.
+
+SQL> ---
+SQL> 
+SQL> set echo off
+
+/* From the Above 5 Queries, there is One Query from 3b(v) that cannot be speed up query processing. */ 

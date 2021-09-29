@@ -1,0 +1,374 @@
+SQL> set feedback on
+SQL> 
+SQL> /*==================================
+SQL> 	     Name - Hay Munn Hnin Wai
+SQL> 	     Student ID - 6573277
+SQL> 	     Tutorial - T02
+SQL> 	     Assignment 1 - Task(2a)
+SQL> =====================================*/
+SQL> 
+SQL> -- (2a-i) explain plan before the creation of the Index that perform Vertal-Traversal and not access a relational table.
+SQL> explain plan for
+  2  SELECT COUNT(*)
+  3  FROM PART
+  4  WHERE p_partkey = '##########' ;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-i)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2596278069                                                                                                         
+                                                                                                                                    
+----------------------------------------------------------------------------------                                                  
+| Id  | Operation           | Name       | Rows  | Bytes | Cost (%CPU)| Time     |                                                  
+----------------------------------------------------------------------------------                                                  
+|   0 | SELECT STATEMENT    |            |     1 |     5 |     1   (0)| 00:00:01 |                                                  
+|   1 |  SORT AGGREGATE     |            |     1 |     5 |            |          |                                                  
+|*  2 |   FILTER            |            |       |       |            |          |                                                  
+|*  3 |    INDEX UNIQUE SCAN| PART_PEKEY |     1 |     5 |     1   (0)| 00:00:01 |                                                  
+----------------------------------------------------------------------------------                                                  
+                                                                                                                                    
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   2 - filter(TO_NUMBER('##########')>=0)                                                                                           
+   3 - access("P_PARTKEY"=TO_NUMBER('##########'))                                                                                  
+
+16 rows selected.
+
+SQL> ----------------------------------------------------------------------------------------------------------------------------------
+SQL> -- (ii)explain plan before the creation of the Index that perform VERTICAL-Traversal and Horizontally Without access a relational table.
+SQL> explain plan for
+  2  SELECT COUNT(*)
+  3  FROM PART
+  4  WHERE p_partkey > '#########' ;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-ii)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 4293627538                                                                                                         
+                                                                                                                                    
+--------------------------------------------------------------------------------                                                    
+| Id  | Operation         | Name       | Rows  | Bytes | Cost (%CPU)| Time     |                                                    
+--------------------------------------------------------------------------------                                                    
+|   0 | SELECT STATEMENT  |            |     1 |     5 |     3   (0)| 00:00:01 |                                                    
+|   1 |  SORT AGGREGATE   |            |     1 |     5 |            |          |                                                    
+|*  2 |   INDEX RANGE SCAN| PART_PEKEY |  3000 | 15000 |     3   (0)| 00:00:01 |                                                    
+--------------------------------------------------------------------------------                                                    
+                                                                                                                                    
+Predicate Information (identified by operation id):                                                                                 
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   2 - access("P_PARTKEY">TO_NUMBER('#########'))                                                                                   
+
+14 rows selected.
+
+SQL> 
+SQL> 
+SQL> ----------------------------------------------------------------------------------------------------------------------------------
+SQL> -- (iii)explain plan before the creation of the Index that perform HORIZONTALLY Traversal Without access a relational table.
+SQL> explain plan for
+  2  SELECT p_partkey
+  3  FROM PART;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-iii)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2478391124                                                                                                         
+                                                                                                                                    
+-----------------------------------------------------------------------------------                                                 
+| Id  | Operation            | Name       | Rows  | Bytes | Cost (%CPU)| Time     |                                                 
+-----------------------------------------------------------------------------------                                                 
+|   0 | SELECT STATEMENT     |            | 60000 |   292K|    32   (0)| 00:00:01 |                                                 
+|   1 |  INDEX FAST FULL SCAN| PART_PEKEY | 60000 |   292K|    32   (0)| 00:00:01 |                                                 
+-----------------------------------------------------------------------------------                                                 
+
+8 rows selected.
+
+SQL> 
+SQL> 
+SQL> ----------------------------------------------------------------------------------------------------------------------------------
+SQL> -- (iv)explain plan before the creation of the Index that perform VERTICALLY and Access the relational table.
+SQL> explain plan for
+  2  SELECT *
+  3  FROM PART
+  4  WHERE p_partkey = '#####'
+  5  AND p_type = 'SMALL BRUSHED BRASS'
+  6  AND p_retailprice = 1247.28;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-iv)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 937089370                                                                                                          
+                                                                                                                                    
+-------------------------------------------------------------------------------------------                                         
+| Id  | Operation                    | Name       | Rows  | Bytes | Cost (%CPU)| Time     |                                         
+-------------------------------------------------------------------------------------------                                         
+|   0 | SELECT STATEMENT             |            |     1 |   121 |     2   (0)| 00:00:01 |                                         
+|*  1 |  FILTER                      |            |       |       |            |          |                                         
+|*  2 |   TABLE ACCESS BY INDEX ROWID| PART       |     1 |   121 |     2   (0)| 00:00:01 |                                         
+|*  3 |    INDEX UNIQUE SCAN         | PART_PEKEY |     1 |       |     1   (0)| 00:00:01 |                                         
+-------------------------------------------------------------------------------------------                                         
+                                                                                                                                    
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   1 - filter(TO_NUMBER('#####')>=0)                                                                                                
+   2 - filter("P_RETAILPRICE"=1247.28 AND "P_TYPE"='SMALL BRUSHED BRASS')                                                           
+   3 - access("P_PARTKEY"=TO_NUMBER('#####'))                                                                                       
+
+17 rows selected.
+
+SQL> 
+SQL> ----------------------------------------------------------------------------------------------------------------------------------
+SQL> -- (v)explain plan before the creation of the Index that perform VERTICALLY & HORIZONTALLY and Access the relational table.
+SQL> explain plan for
+  2  SELECT *
+  3  FROM PART
+  4  WHERE p_retailprice > 5000;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-v)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 673417232                                                                                                          
+                                                                                                                                    
+--------------------------------------------------------------------------                                                          
+| Id  | Operation         | Name | Rows  | Bytes | Cost (%CPU)| Time     |                                                          
+--------------------------------------------------------------------------                                                          
+|   0 | SELECT STATEMENT  |      |     1 |   121 |   291   (1)| 00:00:01 |                                                          
+|*  1 |  TABLE ACCESS FULL| PART |     1 |   121 |   291   (1)| 00:00:01 |                                                          
+--------------------------------------------------------------------------                                                          
+                                                                                                                                    
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                                                    
+   1 - filter("P_RETAILPRICE">5000)                                                                                                 
+
+13 rows selected.
+
+SQL> 
+SQL> /*========================================================
+SQL> -- Create the Index
+SQL> ===========================================================*/
+SQL> create index A1Q2aIdx on PART(p_name,p_type,p_retailprice);
+
+Index created.
+
+SQL> 
+SQL> -- (2a-i) select statement that perform Vertal-Traversal and not access a relational table after create the Index
+SQL> --explain plan
+SQL> explain plan for
+  2  SELECT COUNT(*)
+  3  FROM PART
+  4  WHERE p_partkey = '##########' ;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-i)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2596278069                                                                                                         
+                                                                                                                                    
+----------------------------------------------------------------------------------                                                  
+| Id  | Operation           | Name       | Rows  | Bytes | Cost (%CPU)| Time     |                                                  
+----------------------------------------------------------------------------------                                                  
+|   0 | SELECT STATEMENT    |            |     1 |     5 |     1   (0)| 00:00:01 |                                                  
+|   1 |  SORT AGGREGATE     |            |     1 |     5 |            |          |                                                  
+|*  2 |   FILTER            |            |       |       |            |          |                                                  
+|*  3 |    INDEX UNIQUE SCAN| PART_PEKEY |     1 |     5 |     1   (0)| 00:00:01 |                                                  
+----------------------------------------------------------------------------------                                                  
+                                                                                                                                    
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   2 - filter(TO_NUMBER('##########')>=0)                                                                                           
+   3 - access("P_PARTKEY"=TO_NUMBER('##########'))                                                                                  
+
+16 rows selected.
+
+SQL> 
+SQL> -- (2a-ii) explain plan before the creation of the Index that perform Vertal-Traversal and Horizontally without access a relational table.
+SQL> explain plan for
+  2  SELECT COUNT(*)
+  3  FROM PART
+  4  WHERE p_partkey > '#########' ;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-ii)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 4293627538                                                                                                         
+                                                                                                                                    
+--------------------------------------------------------------------------------                                                    
+| Id  | Operation         | Name       | Rows  | Bytes | Cost (%CPU)| Time     |                                                    
+--------------------------------------------------------------------------------                                                    
+|   0 | SELECT STATEMENT  |            |     1 |     5 |     3   (0)| 00:00:01 |                                                    
+|   1 |  SORT AGGREGATE   |            |     1 |     5 |            |          |                                                    
+|*  2 |   INDEX RANGE SCAN| PART_PEKEY |  3000 | 15000 |     3   (0)| 00:00:01 |                                                    
+--------------------------------------------------------------------------------                                                    
+                                                                                                                                    
+Predicate Information (identified by operation id):                                                                                 
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   2 - access("P_PARTKEY">TO_NUMBER('#########'))                                                                                   
+
+14 rows selected.
+
+SQL> 
+SQL> -- (iii)explain plan before the creation of the Index that perform Horzontal Traversal without access a relational table.
+SQL> explain plan for
+  2  SELECT p_partkey
+  3  FROM PART;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-iii)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2478391124                                                                                                         
+                                                                                                                                    
+-----------------------------------------------------------------------------------                                                 
+| Id  | Operation            | Name       | Rows  | Bytes | Cost (%CPU)| Time     |                                                 
+-----------------------------------------------------------------------------------                                                 
+|   0 | SELECT STATEMENT     |            | 60000 |   292K|    32   (0)| 00:00:01 |                                                 
+|   1 |  INDEX FAST FULL SCAN| PART_PEKEY | 60000 |   292K|    32   (0)| 00:00:01 |                                                 
+-----------------------------------------------------------------------------------                                                 
+
+8 rows selected.
+
+SQL> 
+SQL> -- (iv)explain plan before the creation of the Index that perform VERTICALLY and Access the relational table.
+SQL> explain plan for
+  2  SELECT *
+  3  FROM PART
+  4  WHERE p_partkey = '#####'
+  5  AND p_type = 'SMALL BRUSHED BRASS'
+  6  AND p_retailprice = 1247.28;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-iv)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 937089370                                                                                                          
+                                                                                                                                    
+-------------------------------------------------------------------------------------------                                         
+| Id  | Operation                    | Name       | Rows  | Bytes | Cost (%CPU)| Time     |                                         
+-------------------------------------------------------------------------------------------                                         
+|   0 | SELECT STATEMENT             |            |     1 |   121 |     2   (0)| 00:00:01 |                                         
+|*  1 |  FILTER                      |            |       |       |            |          |                                         
+|*  2 |   TABLE ACCESS BY INDEX ROWID| PART       |     1 |   121 |     2   (0)| 00:00:01 |                                         
+|*  3 |    INDEX UNIQUE SCAN         | PART_PEKEY |     1 |       |     1   (0)| 00:00:01 |                                         
+-------------------------------------------------------------------------------------------                                         
+                                                                                                                                    
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+                                                                                                                                    
+   1 - filter(TO_NUMBER('#####')>=0)                                                                                                
+   2 - filter("P_RETAILPRICE"=1247.28 AND "P_TYPE"='SMALL BRUSHED BRASS')                                                           
+   3 - access("P_PARTKEY"=TO_NUMBER('#####'))                                                                                       
+
+17 rows selected.
+
+SQL> 
+SQL> -- (v)explain plan before the creation of the Index that perform VERTICALLY & HORIZONTALLY and Access the relational table.
+SQL> explain plan for
+  2  SELECT *
+  3  FROM PART
+  4  WHERE p_retailprice > 5000;
+
+Explained.
+
+SQL> 
+SQL> -- Displan Plan (2a-v)
+SQL> select * from table(dbms_xplan.display);
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 673417232                                                                                                          
+                                                                                                                                    
+--------------------------------------------------------------------------                                                          
+| Id  | Operation         | Name | Rows  | Bytes | Cost (%CPU)| Time     |                                                          
+--------------------------------------------------------------------------                                                          
+|   0 | SELECT STATEMENT  |      |     1 |   121 |   291   (1)| 00:00:01 |                                                          
+|*  1 |  TABLE ACCESS FULL| PART |     1 |   121 |   291   (1)| 00:00:01 |                                                          
+--------------------------------------------------------------------------                                                          
+                                                                                                                                    
+Predicate Information (identified by operation id):                                                                                 
+---------------------------------------------------                                                                                 
+
+PLAN_TABLE_OUTPUT                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------
+                                                                                                                                    
+   1 - filter("P_RETAILPRICE">5000)                                                                                                 
+
+13 rows selected.
+
+SQL> 
+SQL> 
+SQL> --Drop the Index
+SQL> drop index A1Q2aIdx;
+
+Index dropped.
+
+SQL> ---
+SQL> 
+SQL> set echo off

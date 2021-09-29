@@ -1,0 +1,267 @@
+SQL> 
+SQL> /* ======================
+SQL> Name - Hay Munn Hnin Wai
+SQL> UOW ID - 6573277
+SQL> Assignment 2 - Task 1
+SQL> ==========================*/
+SQL> 
+SQL> Create or Replace Procedure EmpMec(eNum IN NUMBER,
+  2  					eName IN VARCHAR2,
+  3  					DOB IN DATE,
+  4  					addr IN VARCHAR2,
+  5  					hDate IN DATE,
+  6  					DL#ML# IN NUMBER,      -- Either Driver or Mechanice L#
+  7  					status IN VARCHAR2,
+  8  					totaltrip IN NUMBER,
+  9  					expe IN VARCHAR2)  IS
+ 10  
+ 11  aE# Mechanic.E#%TYPE;
+ 12  errorNum Number(5);
+ 13  errorMessage VARCHAR2(200);
+ 14  
+ 15  BEGIN
+ 16  	     INSERT INTO TRKEMPLOYEE VALUES (eNum, eName, TO_DATE(DOB,'DD-MON-YYYY'), addr, hDate);
+ 17  
+ 18  	     --if Experience is Null, then it is "DRIVER"
+ 19  If expe IS NULL THEN --Driver!!
+ 20    BEGIN
+ 21  	       --Check if the DL# Found in Mechanic Table!
+ 22  	     SELECT E#
+ 23  	     INTO aE#
+ 24  	     FROM Mechanic
+ 25  	     Where L# = DL#ML#;   --(If inserted L# is Driver.L#, then display logic error).
+ 26  	     DBMS_OUTPUT.PUT_LINE('Attempted to Insert this Mechanic as a "DRIVER": Confliction L# is Found In Mechanic Table');
+ 27  	     ROLLBACK;	 -- Remove whatever just inserted!
+ 28  	 EXCEPTION
+ 29  	  WHEN NO_DATA_FOUND THEN
+ 30  	     INSERT INTO DRIVER VALUES(eNum,DL#ML#,status,totaltrip);
+ 31  	     COMMIT;
+ 32  	  WHEN OTHERS THEN  --Whatever error that DBMS detected, then return this error message!
+ 33  	      errorNum :=  SQLCODE;
+ 34  	      errorMessage := SQLERRM;
+ 35  	      DBMS_OUTPUT.PUT_LINE('Error in EmpMec:');
+ 36  	      DBMS_OUTPUT.PUT_LINE(rpad(errorNum,7)|| ';' || errorMessage);
+ 37  	  ROLLBACK;
+ 38    END;
+ 39  
+ 40  ELSE --Mechanic!!
+ 41  	BEGIN
+ 42  	     --Check if the ML# found in DriverTable
+ 43  	     SELECT E#
+ 44  	     INTO aE#
+ 45  	     FROM Driver
+ 46  	     Where L# = DL#ML#; --(If inserted L# is Mechanic.L#, then display logic error).
+ 47  	     DBMS_OUTPUT.PUT_LINE('Attempted to Insert this Driver as a "Mechanic": Confliction L# is Found In Driver Table');
+ 48  	     ROLLBACK;	 -- Remove whatever just inserted!
+ 49  	 EXCEPTION
+ 50  	  WHEN NO_DATA_FOUND THEN
+ 51  	     INSERT INTO Mechanic VALUES(eNum,DL#ML#,status,expe);
+ 52  	     COMMIT;
+ 53  	  WHEN OTHERS THEN  --Whatever error that DBMS detected, then return this error message!
+ 54  	      errorNum :=  SQLCODE;
+ 55  	      errorMessage := SQLERRM;
+ 56  	      DBMS_OUTPUT.PUT_LINE('Error in EmpMec: ');
+ 57  	       DBMS_OUTPUT.PUT_LINE(rpad(errorNum,7)|| ';' || errorMessage);
+ 58  	  ROLLBACK;
+ 59  
+ 60  	END;
+ 61  END IF;
+ 62  
+ 63  EXCEPTION
+ 64  WHEN OTHERS THEN  --Whatever error that DBMS detected, then return this error message!
+ 65  	      errorNum :=  SQLCODE;
+ 66  	      errorMessage := SQLERRM;
+ 67  	      DBMS_OUTPUT.PUT_LINE('Error in EmpMec:');
+ 68  	       DBMS_OUTPUT.PUT_LINE(rpad(errorNum,7)|| ';' || errorMEssage);
+ 69  	  ROLLBACK;
+ 70  END EmpMec;
+ 71  /
+
+Procedure created.
+
+SQL> show errors;
+No errors.
+SQL> 
+SQL> --Execute Statements
+SQL> Execute EmpMec(16, 'John', '6-SEP-1990', 'BukitPanjang, 403', sysdate-(1.8*365), 12345, 'AVAILABLE', 20, null);
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> execute EmpMec(17, 'TingTing', '11-May-1985', 'Kinstead Town, KIN20', sysdate-(1.6*365), 12345, 'BUSY', null,'STANDARD');
+Attempted to Insert this Driver as a "Mechanic": Confliction L# is Found In     
+Driver Table                                                                    
+
+PL/SQL procedure successfully completed.
+
+SQL> 
+SQL> ----
+SQL> Select * from TRKEMPLOYEE;
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+         1 John Smith                                                           
+42 Victoria St. Hurstville, NSW 2456                                            
+01-APR-20                                                                       
+                                                                                
+         2 Peter Taylor                                       12-JAN-60         
+42 Victoria St. Hurstville, NSW 2456                                            
+01-APR-20                                                                       
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+                                                                                
+         3 John Doe                                           23-MAR-56         
+12 Station St. Dapto, NSW 2530                                                  
+20-JAN-20                                                                       
+                                                                                
+         4 John Gray                                          05-MAY-78         
+16 Station St. Dapto, NSW 2530                                                  
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+13-FEB-20                                                                       
+                                                                                
+         5 Adam Taylor                                        01-JAN-70         
+42 Church St. City, NSW 2300                                                    
+29-DEC-19                                                                       
+                                                                                
+         6 Michael Jones                                      05-OCT-65         
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+23 Waterloo Ave. Surry Hills, NSW 2502                                          
+10-SEP-19                                                                       
+                                                                                
+         7 Frederic Jones                                     28-FEB-73         
+23 Victoria St. Redfern, NSW 2420                                               
+11-AUG-19                                                                       
+                                                                                
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+         8 Peter O'Brien                                      28-FEB-73         
+19 Lucas Dr. Horsley, NSW 2530                                                  
+01-APR-18                                                                       
+                                                                                
+         9 John Lucas                                         16-DEC-56         
+20 Huxley St. Horsley, NSW 2530                                                 
+24-FEB-17                                                                       
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+                                                                                
+        10 John Fox                                           25-OCT-65         
+18 Victoria St. Hurstville, NSW 2456                                            
+25-AUG-19                                                                       
+                                                                                
+        11 Adam Fox                                           04-MAY-70         
+45 Victoria St. Hurstville, NSW 2456                                            
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+20-JUL-19                                                                       
+                                                                                
+        12 Phillip Cox                                        12-DEC-74         
+5 The Avenue, Rockdale, NSW 2300                                                
+04-APR-05                                                                       
+                                                                                
+        13 Andrew K. Smith                                    04-APR-59         
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+42 Bambaramba Ave. Pennant Hills, NSW 2556                                      
+06-NOV-18                                                                       
+                                                                                
+        14 Andrew R. Smith                                    01-APR-83         
+67 King Cr. Hurstville, NSW 2456                                                
+18-JAN-19                                                                       
+                                                                                
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+        15 Michael Potter                                     01-APR-85         
+568 Bong Bong St. Horsley, NSW 2530                                             
+01-OCT-18                                                                       
+                                                                                
+        16 John                                               06-SEP-90         
+BukitPanjang, 403                                                               
+23-JUL-18                                                                       
+
+        E# NAME                                               DOB               
+---------- -------------------------------------------------- ---------         
+ADDRESS                                                                         
+--------------------------------------------------------------------------------
+HIREDATE                                                                        
+---------                                                                       
+                                                                                
+
+16 rows selected.
+
+SQL> Select * from driver;
+
+        E#         L# STATUS     TOTALTRIPMADE                                  
+---------- ---------- ---------- -------------                                  
+         1      10001 AVAILABLE             29                                  
+         3      10002 AVAILABLE             12                                  
+         5      10003 ON LEAVE              20                                  
+         7      20002 BUSY                  19                                  
+         9      30005 BUSY                  19                                  
+        11      20005 ON LEAVE              16                                  
+        13      10008 ON LEAVE                                                  
+        16      12345 AVAILABLE             20                                  
+
+8 rows selected.
+
+SQL> Select * from mechanic;
+
+        E#         L# STATUS     EXPERIENCE                                     
+---------- ---------- ---------- ----------                                     
+         2      10345 AVAILABLE  EXPERT                                         
+         4      10452 AVAILABLE  STANDARD                                       
+         6       7773 ON_LEAVE   STANDARD                                       
+         8      23302 BUSY       BEGINNER                                       
+        10      22205 BUSY       EXPERT                                         
+        12      10005 AVAILABLE  BEGINNER                                       
+        14      10000 AVAILABLE  BEGINNER                                       
+
+7 rows selected.
+
+SQL> ----
+SQL> spool off

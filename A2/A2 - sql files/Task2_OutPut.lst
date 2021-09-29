@@ -1,0 +1,159 @@
+SQL> 
+SQL> /* ======================
+SQL> Name - Hay Munn Hnin Wai
+SQL> UOW ID - 6573277
+SQL> Assignment 2 - Task 2
+SQL> ==========================*/
+SQL> 
+SQL> Create or Replace Trigger BI_VerifyTrip
+  2  BEFORE INSERT ON TRIP
+  3  REFERENCING OLD AS old_values NEW As new_values
+  4  FOR EACH ROW
+  5  
+  6  DECLARE
+  7  	   v_user VARCHAR2(20);
+  8  	   v_date VARCHAR2(20);
+  9  
+ 10  	   TLNum TRIP.L#%TYPE;
+ 11  
+ 12  BEGIN
+ 13  	 SELECT user, to_char(SYSDATE,'DD-MM-YYYY HH24:MI:SS') INTO v_user, v_date from dual;
+ 14  
+ 15  	 If INSERTING THEN
+ 16  	     DBMS_OUTPUT.PUT_LINE(SQL%ROWCOUNT || ' ROW HAS BEEN INSERTED BY User' || v_user ||' ' || 'ON' || v_date);
+ 17  	     DBMS_OUTPUT.PUT_LINE('You Have inserted a new Trip Made By Driver:' || ' (T#: ' || :new_values.T# ||'  ,L#: ' || :new_values.L#
+ 18  			     || ' ,Reg#:' || :new_values.REG# || ' ,Trip_Date:' || :new_values.TRIP_DATE || ')' );
+ 19  
+ 20  	--Get the Count(Trip) everytime User Inserted a new Data
+ 21  	 select count(trip.l#) + 1
+ 22  	 INTO TLNUM
+ 23  	 from Trip
+ 24  	 where trip.l# = :new_values.l#
+ 25  	 group by trip.l#;
+ 26  
+ 27  	 Update Driver
+ 28  	 Set TOTALTRIPMADE = TLNUM
+ 29  	 Where Driver.L# = :new_values.l#;
+ 30  
+ 31  	 DBMS_OUTPUT.PUT_LINE('Total Nos of Trip Made By this Driver '|| :new_values.l# || ' is: ' || TLNUM);
+ 32  
+ 33  END If;
+ 34  	 EXCEPTION
+ 35  	 WHEN OTHERS THEN
+ 36  	 raise_application_error(-20001,'An error was encountered - ' || SQLCODE || '-ERROR-' || SQLERRM);
+ 37  
+ 38  END BI_VerifyTrip;
+ 39  /
+
+Trigger created.
+
+SQL> show errors
+No errors.
+SQL> 
+SQL> 
+SQL>  -- Try to Insert a new data to the "TRIP Table" for Testing the Trigger
+SQL> INSERT INTO TRIP VALUES(109, 10001, 'PKR768', sysdate-(0.6*90));
+1 ROW HAS BEEN INSERTED BY UserCSCI235 ON08-05-2020 21:11:18                    
+You Have inserted a new Trip Made By Driver: (T#: 109  ,L#: 10001 ,Reg#:PKR768  
+,Trip_Date:15-MAR-20)                                                           
+Total Nos of Trip Made By this Driver 10001 is: 28                              
+
+1 row created.
+
+SQL> INSERT INTO TRIP VALUES (110, 10001, 'KKK007', sysdate);
+1 ROW HAS BEEN INSERTED BY UserCSCI235 ON08-05-2020 21:11:18                    
+You Have inserted a new Trip Made By Driver: (T#: 110  ,L#: 10001 ,Reg#:KKK007  
+,Trip_Date:08-MAY-20)                                                           
+Total Nos of Trip Made By this Driver 10001 is: 29                              
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TRIP VALUES (111, 10002, 'KKK007', sysdate-4);
+1 ROW HAS BEEN INSERTED BY UserCSCI235 ON08-05-2020 21:11:18                    
+You Have inserted a new Trip Made By Driver: (T#: 111  ,L#: 10002 ,Reg#:KKK007  
+,Trip_Date:04-MAY-20)                                                           
+Total Nos of Trip Made By this Driver 10002 is: 12                              
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TRIP VALUES(116, 10003, 'SST005', sysdate-28 );
+1 ROW HAS BEEN INSERTED BY UserCSCI235 ON08-05-2020 21:11:18                    
+You Have inserted a new Trip Made By Driver: (T#: 116  ,L#: 10003 ,Reg#:SST005  
+,Trip_Date:10-APR-20)                                                           
+Total Nos of Trip Made By this Driver 10003 is: 20                              
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TRIP VALUES(113, 20002, 'PKR008', sysdate-20 );
+1 ROW HAS BEEN INSERTED BY UserCSCI235 ON08-05-2020 21:11:18                    
+You Have inserted a new Trip Made By Driver: (T#: 113  ,L#: 20002 ,Reg#:PKR008  
+,Trip_Date:18-APR-20)                                                           
+Total Nos of Trip Made By this Driver 20002 is: 19                              
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TRIP VALUES(114, 30005, 'PKR008', sysdate-25 );
+1 ROW HAS BEEN INSERTED BY UserCSCI235 ON08-05-2020 21:11:18                    
+You Have inserted a new Trip Made By Driver: (T#: 114  ,L#: 30005 ,Reg#:PKR008  
+,Trip_Date:13-APR-20)                                                           
+Total Nos of Trip Made By this Driver 30005 is: 19                              
+
+1 row created.
+
+SQL> 
+SQL> INSERT INTO TRIP VALUES(112, 20005, 'PKR008', sysdate-15 );
+1 ROW HAS BEEN INSERTED BY UserCSCI235 ON08-05-2020 21:11:18                    
+You Have inserted a new Trip Made By Driver: (T#: 112  ,L#: 20005 ,Reg#:PKR008  
+,Trip_Date:23-APR-20)                                                           
+Total Nos of Trip Made By this Driver 20005 is: 16                              
+
+1 row created.
+
+SQL> 
+SQL> 
+SQL> --Check the Nos of TRIP_MADE By Driver (By Joining "TRIP" & "Driver" Table)
+SQL> select trip.l#,count(trip.l#)
+  2  from trip
+  3  left join driver on trip.l# = driver.l#
+  4  group by trip.l#
+  5  order by trip.l#;
+
+        L# COUNT(TRIP.L#)                                                       
+---------- --------------                                                       
+     10001             29                                                       
+     10002             12                                                       
+     10003             20                                                       
+     20002             19                                                       
+     20005             16                                                       
+     30005             19                                                       
+
+6 rows selected.
+
+SQL> 
+SQL> 
+SQL> --Display the Updated TOTAL_TRIP_MADE Result in "Driver" Table
+SQL> Select * from Driver;
+
+        E#         L# STATUS     TOTALTRIPMADE                                  
+---------- ---------- ---------- -------------                                  
+         1      10001 AVAILABLE             29                                  
+         3      10002 AVAILABLE             12                                  
+         5      10003 ON LEAVE              20                                  
+         7      20002 BUSY                  19                                  
+         9      30005 BUSY                  19                                  
+        11      20005 ON LEAVE              16                                  
+        13      10008 ON LEAVE                                                  
+
+7 rows selected.
+
+SQL> 
+SQL> 
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> set echo off
